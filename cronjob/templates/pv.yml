@@ -4,13 +4,13 @@ metadata:
   name: {{ .Release.Name }}-pv
 spec:
   capacity:
-    storage: 2Gi
+    storage: 200Mi
   mountOptions:
     - hard
     - nfsvers=4.0
   accessModes:
     - ReadWriteOnce
-  storageClassName: standard
+  storageClassName: gp2
   volumeMode: Filesystem
   hostPath:
     path: /tmp/{{ .Release.Name }}-pv
@@ -26,4 +26,4 @@ spec:
   resources:
     requests:
       storage: 200Mi
-  storageClassName: standard    
+  storageClassName: gp2    
