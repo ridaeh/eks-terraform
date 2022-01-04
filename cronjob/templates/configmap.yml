@@ -9,4 +9,4 @@ data:
       aws_secret_access_key={{ .Values.ACCESS_KEY }}
     config: |- 
       [default]
-      region = eu-west-2
+      region = us-east-2

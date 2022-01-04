@@ -18,6 +18,6 @@ module "vpc" {
 }
 
 resource  "aws_s3_bucket" "redis-backup" {
-  bucket = "redis-backup"
+  bucket = "redis-backup-2022010401"
   acl    = "private"
 }
