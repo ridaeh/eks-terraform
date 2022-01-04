@@ -10,11 +10,14 @@ spec:
     - nfsvers=4.0
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2
+  storageClassName: "gp2"
   volumeMode: Filesystem
   hostPath:
     path: /tmp/{{ .Release.Name }}-pv
     type: ''
+  claimRef:
+    name: {{ .Release.Name }}-pvc
+    namespace: default
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -26,4 +29,5 @@ spec:
   resources:
     requests:
       storage: 200Mi
-  storageClassName: gp2    
+  storageClassName: "gp2"
+  volumeName: {{ .Release.Name }}-pv
