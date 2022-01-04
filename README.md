@@ -88,3 +88,11 @@ $ helm delete redis-cluster
 ```
 
 The above command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Backup :
+
+To install the backup task run the following command:
+
+```
+helm install backup cronjob
+```

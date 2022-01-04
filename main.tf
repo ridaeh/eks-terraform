@@ -16,3 +16,8 @@ module "vpc" {
   single_nat_gateway   = true
   enable_dns_hostnames = true
 }
+
+resource  "aws_s3_bucket" "redis-backup" {
+  bucket = "redis-backup"
+  acl    = "private"
+}

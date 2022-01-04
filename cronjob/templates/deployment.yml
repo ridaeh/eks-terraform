@@ -1,0 +1,59 @@
+# https://docs.bitnami.com/kubernetes/infrastructure/redis/administration/backup-restore/
+# https://programmer.ink/think/several-ways-to-export-and-import-redis-data.html
+# https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-app
+spec:
+  # Schedule format use Cron expression format, look at the end of this page
+  schedule: "* */4 * * *"
+  successfulJobsHistoryLimit: 1 # The number of successful finished jobs to retain (defaults to 3).
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ .Release.Name }}-app
+        spec:
+          containers:
+            - name: redis-backup
+              # The image that contains our needed tools 
+              image: alpine:3.14
+              imagePullPolicy: IfNotPresent
+              env:
+              - name: PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: redis-cluster
+                    key: redis-password
+              args:
+                - /bin/sh
+                - -c
+                # As we will have alot of backup file, we will name them with a time prefix.
+                # then use mysqldump to export the db and gzip to compress it.
+                
+                - | 
+                  export now=$(date +"%s_%Y-%m-%d");
+                  apk add --no-cache redis
+                  apk add --no-cache python3 py3-pip 
+                  pip3 install --upgrade pip 
+                  pip3 install awscli
+                  echo 'save' | redis-cli -h redis-cluster-headless -a ${PASSWORD}
+                  tar -czvf redis-backup-${now}.tar.gz -C /tmp dump.rdb appendonly.aof
+                  aws --version
+                  sleep 280s;
+              resources:
+                requests:
+                  cpu: 31m
+                  memory: 256Mi
+                limits:
+                  memory: 256Mi
+              volumeMounts:
+                - name: backup-volume
+                  mountPath: /tmp
+          restartPolicy: OnFailure  # restart policy: Always, OnFailure et Never
+          volumes:
+            - name: backup-volume
+              persistentVolumeClaim:
+                claimName: redis-data-redis-cluster-master-0
