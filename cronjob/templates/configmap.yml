@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-aws-configmap
+data: 
+    credentials: |- 
+      [default]
+      aws_access_key_id={{ .Values.KEY_ID }}
+      aws_secret_access_key={{ .Values.ACCESS_KEY }}
+    config: |- 
+      [default]
+      region = eu-west-2

@@ -7,7 +7,7 @@ metadata:
   name: {{ .Release.Name }}-app
 spec:
   # Schedule format use Cron expression format, look at the end of this page
-  schedule: "* */4 * * *"
+  schedule: "0 */4 * * *"
   successfulJobsHistoryLimit: 1 # The number of successful finished jobs to retain (defaults to 3).
   jobTemplate:
     spec:
@@ -40,8 +40,10 @@ spec:
                   pip3 install --upgrade pip 
                   pip3 install awscli
                   echo 'save' | redis-cli -h redis-cluster-headless -a ${PASSWORD}
+                  cd /backup
                   tar -czvf redis-backup-${now}.tar.gz -C /tmp dump.rdb appendonly.aof
                   aws --version
+                  aws s3 cp redis-backup-${now}.tar.gz s3://{{ .Values.bucketName }}/
                   sleep 280s;
               resources:
                 requests:
@@ -52,8 +54,19 @@ spec:
               volumeMounts:
                 - name: backup-volume
                   mountPath: /tmp
+                - name: {{ .Release.Name }}-aws-configmap
+                  mountPath: /root/.aws/
+                - name: backup-folder
+                  mountPath: /backup
           restartPolicy: OnFailure  # restart policy: Always, OnFailure et Never
           volumes:
             - name: backup-volume
               persistentVolumeClaim:
                 claimName: redis-data-redis-cluster-master-0
+            - configMap:
+                name: {{ .Release.Name }}-aws-configmap
+              name: {{ .Release.Name }}-aws-configmap
+            - name: backup-folder
+              persistentVolumeClaim:
+                  claimName: {{ .Release.Name }}-pvc
+  
